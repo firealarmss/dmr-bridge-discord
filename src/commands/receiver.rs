@@ -2,16 +2,6 @@ use byteorder::{BigEndian, ByteOrder, LittleEndian};
 use dasp_interpolate::linear::Linear;
 use dasp_signal::{self as signal, Signal};
 use serenity::prelude::Mutex as SerenityMutex;
-use serenity::{
-    client::Context,
-    framework::standard::{
-        macros::{command, group},
-        CommandResult,
-    },
-    model::channel::Message,
-    prelude::{Mutex, TypeMapKey, Mentionable},
-    Result as SerenityResult,
-};
 use songbird::input::{Codec, Container, Reader};
 use songbird::{input::Input, Call};
 use std::net::UdpSocket;
@@ -108,6 +98,7 @@ impl Receiver {
 let sub_tx = tx.clone();
 let mut first_packet_received = false;
 let mut previous_audio_end = time::Instant::now();
+let last_heard = 0;
 
 thread::spawn(move || {
     let mut buffer = [0u8; 352];
@@ -125,21 +116,21 @@ thread::spawn(move || {
                     let dst_id = u16::from_be_bytes([buffer[packet_size - 2], buffer[packet_size - 1]]);
                     let audio_data = &buffer[..(packet_size - 4)];
 
-                //    if !first_packet_received {
+                    if last_head != src_id {
                         println!(
                             "[INFO] RECEIVED PACKET: (length: {}, src_id: {}, dst_id: {})",
                             packet_size,
                             src_id,
                             dst_id
                         );
-                        msg.send(ctx, &format!("Recv voice", 1111766189098684458))
+                        //msg.send(ctx, &format!("Recv voice", 1111766189098684458))
                         first_packet_received = true;
-                  //  }
+                    }
 
                     if audio_data.len() == 320 {
                         // Append the received audio to the buffer
                         audio_buffer.extend_from_slice(audio_data);
-
+                        let last_heard = src_id;
                         // Check if enough audio samples are accumulated for playback
                         while audio_buffer.len() >= 320 {
                             // Extract a chunk of 320 samples for playback
