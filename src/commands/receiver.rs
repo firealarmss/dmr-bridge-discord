@@ -157,7 +157,6 @@ thread::spawn(move || {
                     }
                 }
             }
-        }
         Err(_) => return,
     }
 
