@@ -1,16 +1,14 @@
-# dmr-bridge-discord
+# dvm2discord
 
 [![License](https://img.shields.io/badge/License-GPLv3-blue?style=for-the-badge)](https://www.gnu.org/licenses/gpl-3.0)
 
-Bridge a DMR network with a Discord voice channel.
+Bridge a DVM network with a Discord voice channel.
 
 ## Getting started
 
-This script is inspired by <https://github.com/jess-sys/DMRBridgeWAV/blob/master/DMRBridgeWAV>.
+This script is inspired by <https://github.com/jess-sys/DMRBridgeWAV/blob/master/DMRBridgeWAV> and <https://github.com/jess-sys/dmr-bridge-discord>.
 
-The target server is AnalogBridge (see <https://github.com/DVSwitch/Analog_Bridge>).
-
-![Diagram](https://user-images.githubusercontent.com/20131496/151708871-3f1e4635-ecde-49df-8de3-484d58337695.png)
+The target server is dvmbridge (see <https://github.com/DVMProject/dvmbridge>).
 
 ### Build
 
@@ -21,55 +19,14 @@ cargo build --release
 # or run it directly :
 # cargo run
 ```
-
-### Install
-
-Install binaries to `/opt/dmr-bridge-discord/bin`, default config to `/opt/dmr-bridge-discord/.env` and install systemd service to `/lib/systemd/system/dmr-bridge-discord`.
-
-```bash
-# Coming soon
-make install
-make install-config
-make install-systemd
-```
-
 ### Configure
 
 Edit the `.env` (the same directory or in /opt/dmr-bridge-discord) file to reflect your infrastructure :
 
 * `BOT_TOKEN` : see [this link](https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token) to know how to get a token
 * `BOT_PREFIX` : prefix to add before the bot's commands
-* `TARGET_RX_ADDR` : your Analog Bridge IP and port
-* `LOCAL_RX_ADDR` : your dmr-bridge-discord IP and port (is localhost)
-
-### Run
-
-#### Systemctl service
-
-```bash
-systemctl start dmr-bridge-discord.service
-# or enable it at boot:
-# systemctl enable dmr-bridge-discord.service --now
-```
-
-#### Portable install
-
-Do the following after you've built or [downloaded the pre-compiled version](https://github.com/jess-sys/dmr-bridge-discord/releases).
-
-Then execute the binary in the same folder or export the environment variables present in the .env file.
-
-```bash
-./dmr-bridge-discord-linux
-```
-
-#### Inside a container
-
-You can use the docker-compose configuration file:
-
-```bash
-# coming soon - not available atm
-docker-compose up
-```
+* `TARGET_RX_ADDR` : your Analog Bridge IP and port NOT USED AT THIS TIME
+* `LOCAL_RX_ADDR` : your dmr-bridge-discord IP and port to receieve from dvmbridge
 
 ### Usage
 
@@ -80,15 +37,14 @@ Here are the bot's commands:
 
 The bot will join the voice channel you're in after your type `!join`.
 
-Make sure you don't TX and RX at the same time, as AnalogBridge and the rest of the stack is half-duplex.
+TX DOES NOT WORK AT THIS TIME
+
+Make sure you don't TX and RX at the same time, as AnalogBridge and the rest of the stack is half-duplex. 
 
 ## Todo
 
 * Discord multiple voice users at once (merge audio channels)
-* Verbosity levels
-* SMS and DTMF messages
-* Full Docker support
-* systemd services support
+* Add TX support
 
 ## Useless stuff (Copyright)
 
