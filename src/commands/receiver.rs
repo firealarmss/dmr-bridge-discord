@@ -90,7 +90,7 @@ let mut previous_audio_end = time::Instant::now();
 
 thread::spawn(move || {
   //  let socket = UdpSocket::bind("0.0.0.0:5000").expect("Failed to bind UDP socket");
-    let mut buffer = [0u8; 8192];
+    let mut buffer = [0u8; 4096];
     let mut audio_buffer = Vec::new();
 
     loop {
