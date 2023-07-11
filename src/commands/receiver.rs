@@ -87,8 +87,8 @@ impl Receiver {
         let sub_tx = tx.clone();
         thread::spawn(move || loop {
             let mut buffer = [0u8; 352];
-
-            match socket.recv(&mut buffer) {
+   loop {
+        match socket.recv_from(&mut buffer) {
             Ok((packet_size, _)) => {
                 if packet_size >= 4 {
                     let audio_size = packet_size - 4; // Size of audio data without IDs
@@ -111,6 +111,7 @@ impl Receiver {
             }
             Err(_) => return,
         }
+    }
         });
 
         Self {
