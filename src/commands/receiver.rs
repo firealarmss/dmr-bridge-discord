@@ -85,21 +85,25 @@ impl Receiver {
         });
 
 let sub_tx = tx.clone();
+let mut first_packet_received = false;
 thread::spawn(move || loop {
     let mut buffer = [0u8; 352];
-        match socket.recv_from(&mut buffer) {
+       match socket.recv_from(&mut buffer) {
             Ok((packet_size, _)) => {
                 if packet_size >= 4 {
                     let src_id = u16::from_be_bytes([buffer[packet_size - 4], buffer[packet_size - 3]]);
                     let dst_id = u16::from_be_bytes([buffer[packet_size - 2], buffer[packet_size - 1]]);
                     let audio_data = &buffer[..(packet_size - 4)];
 
-                    println!(
-                        "[INFO] RECEIVED PACKET: (length: {}, src_id: {}, dst_id: {})",
-                        packet_size,
-                        src_id,
-                        dst_id
-                    );
+                    if !first_packet_received {
+                        println!(
+                            "[INFO] RECEIVED FIRST PACKET: (length: {}, src_id: {}, dst_id: {})",
+                            packet_size,
+                            src_id,
+                            dst_id
+                        );
+                        first_packet_received = true;
+                    }
 
                     if audio_data.len() == 320 {
                         let audio = Vec::from(audio_data);
