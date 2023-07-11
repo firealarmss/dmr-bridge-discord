@@ -123,7 +123,7 @@ impl Receiver {
                                     src_id,
                                     dst_id
                                 );
-                                send_discord_webhook(&src_id.to_string(), &dst_id.to_string());
+                             //   send_discord_webhook(&src_id.to_string(), &dst_id.to_string());
                                 first_packet_received = true;
                             }
 
@@ -190,22 +190,21 @@ impl Receiver {
     }
 }
 
-async fn send_discord_webhook() -> Result<(), Box<dyn std::error::Error>> {
-    let request = client.post("https://discord.com/api/webhooks/1128288295068110909/VlmFL3xYoQW5cpv_Otuxn2D1hgD3N-V_0TTp4lt2Z8OUaI0Zvi9ElwMCsW2-u0Oq4ya4").body("data");
-
-    if let Err(e) = request.send().await {
-        // Handle the error...
-    }
-
-    let client = Client::new();
-    let payload = format!(
-        r#"{{"content": "[INFO] RECEIVED PACKET: (src_id: {}, dst_id: {})"}}"#,
-        src_id, dst_id
-    );
-    let request = client
-        .post(webhook_url)
-        .body(payload)
-        .header("Content-Type", "application/json");
-    Ok(()) 
-}
+//async fn send_discord_webhook() -> Result<(), Box<dyn std::error::Error>> {
+//    let request = client.post("https://discord.com/api/webhooks/1128288295068110909/VlmFL3xYoQW5cpv_Otuxn2D1hgD3N-V_0TTp4lt2Z8OUaI0Zvi9ElwMCsW2-u0Oq4ya4").body("data");
+//
+//    if let Err(e) = request.send().await {
+//        // Handle the error...
+ //   }
+//
+ //   let client = Client::new();
+ //   let payload = format!(
+ //       r#"{{"content": "[INFO] RECEIVED PACKET: (src_id: {}, dst_id: {})"}}"#,
+ //       src_id, dst_id
+  //  );
+  //  let request = client
+  //      .post(webhook_url)
+  //      .body(payload)
+   //     .header("Content-Type", "application/json");
+   // Ok(()) 
 }
