@@ -86,28 +86,36 @@ impl Receiver {
 
 let sub_tx = tx.clone();
 thread::spawn(move || {
-//    let socket = UdpSocket::bind("0.0.0.0:5000").expect("Failed to bind UDP socket");
-    let mut buffer = [0u8; 360]; // Adjust buffer size according to your structure
+  //  let socket = UdpSocket::bind("0.0.0.0:5000").expect("Failed to bind UDP socket");
+    let mut buffer = [0u8; 352];
 
     loop {
         match socket.recv_from(&mut buffer) {
             Ok((packet_size, _)) => {
-                if packet_size >= 6 {
-                    let src_id = u16::from_be_bytes([buffer[0], buffer[1]]);
-                    let dst_id = u16::from_be_bytes([buffer[2], buffer[3]]);
-                    let audio_size = packet_size - 6; // Size of audio data without IDs
-
-                    if audio_size > 0 {
-                        let audio = Vec::from(&buffer[6..(6 + audio_size)]);
-
-                        println!(
-                            "[INFO] RECEIVED PACKET: (length: {}, src_id: {}, dst_id: {})",
-                            packet_size,
-                            src_id,
-                            dst_id
-                        );
-
-                        if sub_tx.send(Some(audio)).is_err() {
+                if packet_size >= 32 {
+                    let packet_type_as_num = LittleEndian::read_u32(&buffer[20..24]);
+                    let packet_type = match packet_type_as_num {
+                        0 => {
+                            if packet_size == 32 {
+                                USRPVoicePacketType::End
+                            } else {
+                                USRPVoicePacketType::Audio
+                            }
+                        }
+                        2 => USRPVoicePacketType::Start,
+                        _ => USRPVoicePacketType::Audio,
+                    };
+                    println!(
+                        "[INFO] RECEIVED PACKET: {:?} (length: {}, ptt: {})",
+                        packet_type,
+                        packet_size,
+                        BigEndian::read_u32(&buffer[12..16])
+                    );
+                    if packet_type == USRPVoicePacketType::Audio {
+                        let src_id = u16::from_be_bytes([buffer[24], buffer[25]]);
+                        let dst_id = u16::from_be_bytes([buffer[26], buffer[27]]);
+                        let audio = Vec::from(&buffer[32..(32 + 320)]);
+                        if audio.len() == 320 && sub_tx.send(Some(audio)).is_err() {
                             return;
                         }
                     }
@@ -117,7 +125,6 @@ thread::spawn(move || {
         }
     }
 });
-
         Self {
             discord_channel,
             tx,
