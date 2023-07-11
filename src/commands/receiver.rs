@@ -28,21 +28,25 @@ impl Drop for Receiver {
 }
 
 impl Receiver {
+
     pub fn new() -> Self {
-        // You can manage state here, such as a buffer of audio packet bytes so
-        // you can later store them in intervals.
-        let dmr_local_rx_addr = env::var("LOCAL_RX_ADDR")
-            .expect("Expected a local rx address in the environment");
+    // You can manage state here, such as a buffer of audio packet bytes so
+    // you can later store them in intervals.
+    let dmr_local_rx_addr = env::var("LOCAL_RX_ADDR")
+        .expect("Expected a local rx address in the environment");
 
-        let socket = UdpSocket::bind(dmr_local_rx_addr)
-            .expect("Couldn't bind udp socket for reception");
+    let socket = UdpSocket::bind(dmr_local_rx_addr)
+        .expect("Couldn't bind udp socket for reception");
 
-        let discord_channel = Arc::new(Mutex::new(None));
+    let discord_channel = Arc::new(Mutex::new(None));
 
-        let (tx, rx) = sync_channel::<Option<Vec<u8>>>(512);
+    let (tx, rx) = sync_channel::<Option<Vec<u8>>>(512);
 
-        let channel_ref = discord_channel.clone();
-        thread::spawn(move || loop {
+    let channel_ref = discord_channel.clone();
+    thread::spawn(move || {
+        let mut playback_ended = false;
+
+        while !playback_ended {
             match rx.recv() {
                 Ok(packet) => match packet {
                     Some(packet_data) => {
@@ -80,11 +84,16 @@ impl Receiver {
                             }
                         }
                     }
-                    None => return,
+                    None => {
+                        playback_ended = true;
+                        println!("Playback ended");
+                    }
                 },
                 Err(_) => return,
             }
-        });
+        }
+    });
+
 
 let sub_tx = tx.clone();
 let mut first_packet_received = false;
