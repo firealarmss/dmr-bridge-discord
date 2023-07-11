@@ -89,33 +89,29 @@ impl Receiver {
             let mut buffer = [0u8; 352];
 
             match socket.recv(&mut buffer) {
-                Ok(packet_size) => {
-                    if packet_size >= 32 {
-                        let packet_type_as_num = LittleEndian::read_u32(&buffer[20..24]);
-                        let packet_type = match packet_type_as_num {
-                            0 => {
-                                if packet_size == 32 {
-                                    USRPVoicePacketType::End
-                                } else {
-                                    USRPVoicePacketType::Audio
-                                }
-                            }
-                            2 => USRPVoicePacketType::Start,
-                            _ => USRPVoicePacketType::Audio,
-                        };
-                        println!(
-                            "[INFO] RECEIVED PACKET: {:?} (length: {}, ptt: {})",
-                            packet_type,
-                            packet_size,
-                            BigEndian::read_u32(&buffer[12..16])
-                        );
-                        if packet_type == USRPVoicePacketType::Audio {
-                            let audio = Vec::from(&buffer[32..]);
-                            if audio.len() == 320 && sub_tx.send(Some(audio)).is_err() { return }
-                        }
+                     match socket.recv_from(&mut buffer) {
+            Ok((packet_size, _)) => {
+                if packet_size >= 4 {
+                    let audio_size = packet_size - 4; // Size of audio data without IDs
+                    let audio = Vec::from(&buffer[0..audio_size]);
+
+                    let src_id = u16::from(buffer[audio_size]) << 8 | u16::from(buffer[audio_size + 1]);
+                    let dst_id = u16::from(buffer[audio_size + 2]) << 8 | u16::from(buffer[audio_size + 3]);
+
+                    println!(
+                        "[INFO] RECEIVED PACKET: (length: {}, src_id: {}, dst_id: {})",
+                        packet_size,
+                        src_id,
+                        dst_id
+                    );
+
+                    if sub_tx.send(Some(audio)).is_err() {
+                        return;
                     }
                 }
-                Err(_) => return,
+            }
+            Err(_) => return,
+        }
             }
         });
 
