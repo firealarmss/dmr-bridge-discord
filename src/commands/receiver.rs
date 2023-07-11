@@ -5,6 +5,8 @@ use serenity::prelude::Mutex as SerenityMutex;
 use songbird::input::{Codec, Container, Reader};
 use songbird::{input::Input, Call};
 use std::net::UdpSocket;
+use std::time::{Duration, Instant};
+
 use std::sync::{
     mpsc::{sync_channel, SyncSender},
     Arc, Mutex, MutexGuard,
@@ -92,11 +94,13 @@ thread::spawn(move || {
     let mut buffer = [0u8; 352];
     let mut audio_buffer = Vec::new();
     let mut first_packet_received = false;
-    let mut playback_ended = false;
+    let mut last_packet_received = Instant::now();
 
     loop {
         match socket.recv_from(&mut buffer) {
             Ok((packet_size, _)) => {
+                last_packet_received = Instant::now();
+
                 if packet_size >= 4 {
                     let src_id = u16::from_be_bytes([buffer[packet_size - 4], buffer[packet_size - 3]]);
                     let dst_id = u16::from_be_bytes([buffer[packet_size - 2], buffer[packet_size - 1]]);
@@ -144,12 +148,11 @@ thread::spawn(move || {
             Err(_) => return,
         }
 
-        // Detect the end of playback
-        if playback_ended && audio_buffer.is_empty() {
+        // Detect the end of playback if no new packets are received for a certain duration
+        let elapsed_since_last_packet = Instant::now().duration_since(last_packet_received);
+        if elapsed_since_last_packet > Duration::from_secs(1) {
             println!("Playback ended");
             break; // Exit the loop when playback is finished
-        } else {
-            playback_ended = audio_buffer.is_empty();
         }
     }
 });
