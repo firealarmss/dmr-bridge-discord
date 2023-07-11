@@ -107,8 +107,7 @@ thread::spawn(move || {
     let mut audio_buffer = Vec::new();
     let mut first_packet_received = false;
     let mut consecutive_packet_counter = 0;
-
-   loop {
+loop {
     match socket.recv_from(&mut buffer) {
         Ok((packet_size, _)) => {
             consecutive_packet_counter = 0;
@@ -157,24 +156,15 @@ thread::spawn(move || {
                     }
                 }
             }
+        }
         Err(_) => return,
     }
-
-        // Increment the consecutive packet counter
-        consecutive_packet_counter += 1;
-
-        // Check if consecutive packets have not been received for a certain number of iterations
-        if consecutive_packet_counter > 10 {
-            println!("Playback ended");
-            break; // Exit the loop when playback is finished
-        }
-    }
-});
+}
         Self {
             discord_channel,
             tx,
         }
-
+});
     pub fn set(&mut self, device: Arc<SerenityMutex<Call>>) {
         let device = Arc::clone(&device);
         let mut discord_channel = self.discord_channel.lock().unwrap();
