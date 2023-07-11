@@ -2,6 +2,16 @@ use byteorder::{BigEndian, ByteOrder, LittleEndian};
 use dasp_interpolate::linear::Linear;
 use dasp_signal::{self as signal, Signal};
 use serenity::prelude::Mutex as SerenityMutex;
+use serenity::{
+    client::Context,
+    framework::standard::{
+        macros::{command, group},
+        CommandResult,
+    },
+    model::channel::Message,
+    prelude::{Mutex, TypeMapKey, Mentionable},
+    Result as SerenityResult,
+};
 use songbird::input::{Codec, Container, Reader};
 use songbird::{input::Input, Call};
 use std::net::UdpSocket;
@@ -115,15 +125,16 @@ thread::spawn(move || {
                     let dst_id = u16::from_be_bytes([buffer[packet_size - 2], buffer[packet_size - 1]]);
                     let audio_data = &buffer[..(packet_size - 4)];
 
-                    if !first_packet_received {
+                //    if !first_packet_received {
                         println!(
                             "[INFO] RECEIVED PACKET: (length: {}, src_id: {}, dst_id: {})",
                             packet_size,
                             src_id,
                             dst_id
                         );
+                        msg.send(ctx, &format!("Recv voice", 1111766189098684458))
                         first_packet_received = true;
-                    }
+                  //  }
 
                     if audio_data.len() == 320 {
                         // Append the received audio to the buffer
