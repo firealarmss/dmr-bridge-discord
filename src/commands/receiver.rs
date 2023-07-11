@@ -116,7 +116,7 @@ thread::spawn(move || {
                     let dst_id = u16::from_be_bytes([buffer[packet_size - 2], buffer[packet_size - 1]]);
                     let audio_data = &buffer[..(packet_size - 4)];
 
-                    if last_head != src_id {
+                    if last_heard != src_id {
                         println!(
                             "[INFO] RECEIVED PACKET: (length: {}, src_id: {}, dst_id: {})",
                             packet_size,
