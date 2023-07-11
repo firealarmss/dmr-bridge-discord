@@ -37,13 +37,26 @@ impl Receiver {
 
         let discord_channel = Arc::new(Mutex::new(None));
 
-        let (tx, rx) = sync_channel::<Option<Vec<u8>>>(512);
+        let (tx, rx) = sync_channel::<Option<(Vec<u8>, u16, u16)>>(512);
+
 
         let channel_ref = discord_channel.clone();
         thread::spawn(move || loop {
-            match rx.recv() {
-                Ok(packet) => match packet {
-                    Some(packet_data) => {
+           match rx.recv() {
+    Ok(packet) => match packet {
+        Some((packet_data, src_id, dst_id)) => {
+            // Extract the audio data from the packet_data
+                        let audio = &packet_data[..packet_data.len() - 4];
+
+            // Extract the source and destination IDs from the packet_data
+                        let src_id_high_byte = packet_data[packet_data.len() - 4];
+                        let src_id_low_byte = packet_data[packet_data.len() - 3];
+                        let dst_id_high_byte = packet_data[packet_data.len() - 2];
+                        let dst_id_low_byte = packet_data[packet_data.len() - 1];
+
+                        let src_id = ((src_id_high_byte as u16) << 8) | (src_id_low_byte as u16);
+                        let dst_id = ((dst_id_high_byte as u16) << 8) | (dst_id_low_byte as u16);
+
                         let mut data: [i16; 160] = [0; 160];
                         LittleEndian::read_i16_into(&packet_data, &mut data);
                         let mut source = signal::from_iter(data.iter().cloned());
@@ -111,7 +124,11 @@ impl Receiver {
                         );
                         if packet_type == USRPVoicePacketType::Audio {
                             let audio = Vec::from(&buffer[32..]);
-                            if audio.len() == 320 && sub_tx.send(Some(audio)).is_err() { return }
+                            if audio.len() == 320 {
+                                if sub_tx.send(Some((audio, e.SrcId, e.DstId))).is_err() {
+                                    return;
+                                }
+                            }
                         }
                     }
                 }
