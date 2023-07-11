@@ -208,3 +208,4 @@ async fn send_discord_webhook() -> Result<(), Box<dyn std::error::Error>> {
         .header("Content-Type", "application/json");
     Ok(()) 
 }
+}
