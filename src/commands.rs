@@ -16,7 +16,7 @@ use std::sync::Arc;
 mod transmitter;
 pub mod receiver;
 
-use transmitter::{Transmitter, TransmitterWrapper};
+//use transmitter::{Transmitter, TransmitterWrapper};
 use chrono::prelude::Utc;
 use receiver::Receiver;
 
@@ -61,12 +61,12 @@ async fn join(ctx: &Context, msg: &Message) -> CommandResult {
         // NOTE: this skips listening for the actual connection result.
         let mut handler = handler_lock.lock().await;
 
-        let transmitter = Arc::new(Transmitter::new());
-        let speaking_update_transmitter = TransmitterWrapper::new(transmitter.clone());
-        let voice_packet_transmitter = TransmitterWrapper::new(transmitter.clone());
+     //   let transmitter = Arc::new(Transmitter::new());
+    //    let speaking_update_transmitter = TransmitterWrapper::new(transmitter.clone());
+     //   let voice_packet_transmitter = TransmitterWrapper::new(transmitter.clone());
 
-        handler.add_global_event(CoreEvent::SpeakingUpdate.into(), speaking_update_transmitter);
-        handler.add_global_event(CoreEvent::VoicePacket.into(), voice_packet_transmitter);
+ //       handler.add_global_event(CoreEvent::SpeakingUpdate.into(), speaking_update_transmitter);
+//        handler.add_global_event(CoreEvent::VoicePacket.into(), voice_packet_transmitter);
 
         let receiver_lock = {
             let data_read = ctx.data.read().await;
