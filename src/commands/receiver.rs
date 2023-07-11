@@ -130,7 +130,7 @@ thread::spawn(move || {
                     if audio_data.len() == 320 {
                         // Append the received audio to the buffer
                         audio_buffer.extend_from_slice(audio_data);
-                        let last_heard = src_id;
+                        last_heard = src_id;
                         // Check if enough audio samples are accumulated for playback
                         while audio_buffer.len() >= 320 {
                             // Extract a chunk of 320 samples for playback
