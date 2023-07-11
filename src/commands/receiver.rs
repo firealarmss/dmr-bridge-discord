@@ -89,7 +89,6 @@ impl Receiver {
             let mut buffer = [0u8; 352];
 
             match socket.recv(&mut buffer) {
-                     match socket.recv_from(&mut buffer) {
             Ok((packet_size, _)) => {
                 if packet_size >= 4 {
                     let audio_size = packet_size - 4; // Size of audio data without IDs
@@ -112,7 +111,6 @@ impl Receiver {
             }
             Err(_) => return,
         }
-            }
         });
 
         Self {
