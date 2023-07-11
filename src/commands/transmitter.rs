@@ -52,9 +52,9 @@ impl Transmitter {
         let socket = UdpSocket::bind("0.0.0.0:0")
             .expect("Couldn't bind udp socket for transmission");
 
-        socket
-         //   .connect(dmr_target_rx_addr)
-            .expect("Couldn't connect to DMR's audio receiver");
+     //   socket
+     //       .connect(dmr_target_rx_addr)
+     //       .expect("Couldn't connect to DMR's audio receiver");
 
         let (tx, rx) = sync_channel::<Option<(USRPVoicePacketType, Vec<u8>)>>(512);
 
