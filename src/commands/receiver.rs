@@ -6,6 +6,8 @@ use songbird::input::{Codec, Container, Reader};
 use songbird::{input::Input, Call};
 use std::net::UdpSocket;
 use std::time::{Duration, Instant};
+use reqwest::blocking::{Client, Request};
+use std::thread;
 
 use std::sync::{
     mpsc::{sync_channel, SyncSender},
@@ -106,58 +108,59 @@ thread::spawn(move || {
     let mut first_packet_received = false;
     let mut consecutive_packet_counter = 0;
 
-    loop {
-        match socket.recv_from(&mut buffer) {
-            Ok((packet_size, _)) => {
-                consecutive_packet_counter = 0;
+   loop {
+    match socket.recv_from(&mut buffer) {
+        Ok((packet_size, _)) => {
+            consecutive_packet_counter = 0;
 
-                if packet_size >= 4 {
-                    let src_id = u16::from_be_bytes([buffer[packet_size - 4], buffer[packet_size - 3]]);
-                    let dst_id = u16::from_be_bytes([buffer[packet_size - 2], buffer[packet_size - 1]]);
-                    let audio_data = &buffer[..(packet_size - 4)];
+            if packet_size >= 4 {
+                let src_id = u16::from_be_bytes([buffer[packet_size - 4], buffer[packet_size - 3]]);
+                let dst_id = u16::from_be_bytes([buffer[packet_size - 2], buffer[packet_size - 1]]);
+                let audio_data = &buffer[..(packet_size - 4)];
 
-                    if last_heard != src_id {
-                        println!(
-                            "[INFO] RECEIVED PACKET: (length: {}, src_id: {}, dst_id: {})",
-                            packet_size,
-                            src_id,
-                            dst_id
-                        );
-                        //msg.send(ctx, &format!("Recv voice", 1111766189098684458))
-                        first_packet_received = true;
-                    }
+                if last_heard != src_id {
+                    println!(
+                        "[INFO] RECEIVED PACKET: (length: {}, src_id: {}, dst_id: {})",
+                        packet_size,
+                        src_id,
+                        dst_id
+                    );
+                    send_discord_webhook(&src_id.to_string(), &dst_id.to_string());
+                    first_packet_received = true;
+                }
 
-                    if audio_data.len() == 320 {
-                        // Append the received audio to the buffer
-                        audio_buffer.extend_from_slice(audio_data);
-                        last_heard = src_id;
-                        // Check if enough audio samples are accumulated for playback
-                        while audio_buffer.len() >= 320 {
-                            // Extract a chunk of 320 samples for playback
-                            let audio_chunk = audio_buffer.drain(..320).collect::<Vec<u8>>();
+                if audio_data.len() == 320 {
+                    // Append the received audio to the buffer
+                    audio_buffer.extend_from_slice(audio_data);
+                    last_heard = src_id;
+                    // Check if enough audio samples are accumulated for playback
+                    while audio_buffer.len() >= 320 {
+                        // Extract a chunk of 320 samples for playback
+                        let audio_chunk = audio_buffer.drain(..320).collect::<Vec<u8>>();
 
-                            // Calculate the time offset for smooth playback
-                            let current_audio_end = previous_audio_end + time::Duration::from_micros(320);
+                        // Calculate the time offset for smooth playback
+                        let current_audio_end = previous_audio_end + time::Duration::from_micros(320);
 
-                            // Simulate the playback delay if necessary
-                            let now = time::Instant::now();
-                            if now < current_audio_end {
-                                thread::sleep(current_audio_end - now);
-                            }
-
-                            // Send the audio chunk for playback
-                            if sub_tx.send(Some(audio_chunk)).is_err() {
-                                return;
-                            }
-
-                            // Update the previous audio end position
-                            previous_audio_end = current_audio_end;
+                        // Simulate the playback delay if necessary
+                        let now = time::Instant::now();
+                        if now < current_audio_end {
+                            thread::sleep(current_audio_end - now);
                         }
+
+                        // Send the audio chunk for playback
+                        if sub_tx.send(Some(audio_chunk)).is_err() {
+                            return;
+                        }
+
+                        // Update the previous audio end position
+                        previous_audio_end = current_audio_end;
                     }
                 }
             }
-            Err(_) => return,
         }
+        Err(_) => return,
+    }
+}
 
         // Increment the consecutive packet counter
         consecutive_packet_counter += 1;
@@ -173,7 +176,6 @@ thread::spawn(move || {
             discord_channel,
             tx,
         }
-    }
 
     pub fn set(&mut self, device: Arc<SerenityMutex<Call>>) {
         let device = Arc::clone(&device);
@@ -185,4 +187,19 @@ thread::spawn(move || {
         let mut discord_channel = self.discord_channel.lock().unwrap();
         *discord_channel = None;
     }
+    
+    fn send_discord_webhook(src_id: &str, dst_id: &str) {
+        
+    let webhook_url = "https://discord.com/api/webhooks/1128288295068110909/VlmFL3xYoQW5cpv_Otuxn2D1hgD3N-V_0TTp4lt2Z8OUaI0Zvi9ElwMCsW2-u0Oq4ya4";
+    let client = Client::new();
+    let payload = format!(
+        r#"{{"content": "[INFO] RECEIVED PACKET: (src_id: {}, dst_id: {})"}}"#,
+        src_id, dst_id
+    );
+    let request = client.post(webhook_url).body(payload).header("Content-Type", "application/json");
+
+    if let Err(e) = request.send() {
+        eprintln!("Failed to send Discord webhook: {:?}", e);
+    }
+}
 }
