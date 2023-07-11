@@ -89,9 +89,9 @@ let mut first_packet_received = false;
 let mut previous_audio_end = time::Instant::now();
 
 thread::spawn(move || {
-  //  let socket = UdpSocket::bind("0.0.0.0:5000").expect("Failed to bind UDP socket");
     let mut buffer = [0u8; 352];
     let mut audio_buffer = Vec::new();
+    let mut first_packet_received = false;
 
     loop {
         match socket.recv_from(&mut buffer) {
@@ -144,6 +144,7 @@ thread::spawn(move || {
         }
     }
 });
+
 
 
 
