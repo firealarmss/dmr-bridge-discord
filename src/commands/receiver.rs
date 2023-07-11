@@ -94,12 +94,12 @@ thread::spawn(move || {
     let mut buffer = [0u8; 352];
     let mut audio_buffer = Vec::new();
     let mut first_packet_received = false;
-    let mut last_packet_received = Instant::now();
+    let mut consecutive_packet_counter = 0;
 
     loop {
         match socket.recv_from(&mut buffer) {
             Ok((packet_size, _)) => {
-                last_packet_received = Instant::now();
+                consecutive_packet_counter = 0;
 
                 if packet_size >= 4 {
                     let src_id = u16::from_be_bytes([buffer[packet_size - 4], buffer[packet_size - 3]]);
@@ -148,18 +148,16 @@ thread::spawn(move || {
             Err(_) => return,
         }
 
-        // Detect the end of playback if no new packets are received for a certain duration
-        let elapsed_since_last_packet = Instant::now().duration_since(last_packet_received);
-        if elapsed_since_last_packet > Duration::from_secs(1) {
+        // Increment the consecutive packet counter
+        consecutive_packet_counter += 1;
+
+        // Check if consecutive packets have not been received for a certain number of iterations
+        if consecutive_packet_counter > 10 {
             println!("Playback ended");
             break; // Exit the loop when playback is finished
         }
     }
 });
-
-
-
-
         Self {
             discord_channel,
             tx,
