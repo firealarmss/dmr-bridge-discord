@@ -207,4 +207,3 @@ impl Receiver {
   //      .body(payload)
    //     .header("Content-Type", "application/json");
    // Ok(()) 
-}
