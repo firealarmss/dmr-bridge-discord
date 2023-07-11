@@ -92,6 +92,7 @@ thread::spawn(move || {
     let mut buffer = [0u8; 352];
     let mut audio_buffer = Vec::new();
     let mut first_packet_received = false;
+    let mut playback_ended = false;
 
     loop {
         match socket.recv_from(&mut buffer) {
@@ -141,6 +142,14 @@ thread::spawn(move || {
                 }
             }
             Err(_) => return,
+        }
+
+        // Detect the end of playback
+        if playback_ended && audio_buffer.is_empty() {
+            println!("Playback ended");
+            break; // Exit the loop when playback is finished
+        } else {
+            playback_ended = audio_buffer.is_empty();
         }
     }
 });
