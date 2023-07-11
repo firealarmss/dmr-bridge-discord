@@ -7,7 +7,6 @@ use songbird::{input::Input, Call};
 use std::net::UdpSocket;
 use std::time::{Duration, Instant};
 use reqwest::blocking::{Client, Request};
-use std::thread;
 
 use std::sync::{
     mpsc::{sync_channel, SyncSender},
