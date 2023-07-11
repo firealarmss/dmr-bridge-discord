@@ -160,7 +160,6 @@ thread::spawn(move || {
         }
         Err(_) => return,
     }
-}
 
         // Increment the consecutive packet counter
         consecutive_packet_counter += 1;
