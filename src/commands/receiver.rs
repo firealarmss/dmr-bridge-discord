@@ -84,18 +84,20 @@ impl Receiver {
             }
         });
 
-        let sub_tx = tx.clone();
-        thread::spawn(move || loop {
-            let mut buffer = [0u8; 352];
-   loop {
+   let sub_tx = tx.clone();
+thread::spawn(move || {
+ //   let socket = UdpSocket::bind("0.0.0.0:5000").expect("Failed to bind UDP socket");
+    let mut buffer = [0u8; 360]; // Adjust buffer size according to your structure
+
+    loop {
         match socket.recv_from(&mut buffer) {
             Ok((packet_size, _)) => {
-                if packet_size >= 4 {
-                    let audio_size = packet_size - 4; // Size of audio data without IDs
-                    let audio = Vec::from(&buffer[0..audio_size]);
+                if packet_size >= 6 {
+                    let audio_size = packet_size - 6; // Size of audio data without IDs
+                    let audio = Vec::from(&buffer[4..(4+audio_size)]);
 
-                    let src_id = u16::from(buffer[audio_size]) << 8 | u16::from(buffer[audio_size + 1]);
-                    let dst_id = u16::from(buffer[audio_size + 2]) << 8 | u16::from(buffer[audio_size + 3]);
+                    let src_id = u16::from_be_bytes([buffer[0], buffer[1]]);
+                    let dst_id = u16::from_be_bytes([buffer[2], buffer[3]]);
 
                     println!(
                         "[INFO] RECEIVED PACKET: (length: {}, src_id: {}, dst_id: {})",
@@ -112,7 +114,7 @@ impl Receiver {
             Err(_) => return,
         }
     }
-        });
+});
 
         Self {
             discord_channel,
