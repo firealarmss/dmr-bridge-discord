@@ -98,7 +98,7 @@ impl Receiver {
 let sub_tx = tx.clone();
 let mut first_packet_received = false;
 let mut previous_audio_end = time::Instant::now();
-let last_heard = 0;
+let mut last_heard = 0;
 
 thread::spawn(move || {
     let mut buffer = [0u8; 352];
