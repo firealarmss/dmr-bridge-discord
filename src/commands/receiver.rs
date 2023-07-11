@@ -86,10 +86,10 @@ impl Receiver {
 
 let sub_tx = tx.clone();
 let mut first_packet_received = false;
-let mut previous_audio_end = 0;
+let mut previous_audio_end = time::Instant::now();
 
 thread::spawn(move || {
-    let socket = UdpSocket::bind("0.0.0.0:5000").expect("Failed to bind UDP socket");
+  //  let socket = UdpSocket::bind("0.0.0.0:5000").expect("Failed to bind UDP socket");
     let mut buffer = [0u8; 8192];
     let mut audio_buffer = Vec::new();
 
@@ -100,13 +100,16 @@ thread::spawn(move || {
                     let src_id = u16::from_be_bytes([buffer[packet_size - 4], buffer[packet_size - 3]]);
                     let dst_id = u16::from_be_bytes([buffer[packet_size - 2], buffer[packet_size - 1]]);
                     let audio_data = &buffer[..(packet_size - 4)];
-                    println!(
-                        "[INFO] RECEIVED FIRST PACKET: (length: {}, src_id: {}, dst_id: {})",
-                        packet_size,
-                        src_id,
-                        dst_id
-                    );
-                    first_packet_received = true;
+
+                    if !first_packet_received {
+                        println!(
+                            "[INFO] RECEIVED FIRST PACKET: (length: {}, src_id: {}, dst_id: {})",
+                            packet_size,
+                            src_id,
+                            dst_id
+                        );
+                        first_packet_received = true;
+                    }
 
                     if audio_data.len() == 320 {
                         // Append the received audio to the buffer
@@ -118,13 +121,12 @@ thread::spawn(move || {
                             let audio_chunk = audio_buffer.drain(..320).collect::<Vec<u8>>();
 
                             // Calculate the time offset for smooth playback
-                            let current_audio_end = previous_audio_end + 320;
+                            let current_audio_end = previous_audio_end + time::Duration::from_micros(320);
 
                             // Simulate the playback delay if necessary
                             let now = time::Instant::now();
-                            let expected_playback_time = time::Duration::from_micros(current_audio_end as u64);
-                            if now < expected_playback_time {
-                                thread::sleep(expected_playback_time - now);
+                            if now < current_audio_end {
+                                thread::sleep(current_audio_end - now);
                             }
 
                             // Send the audio chunk for playback
@@ -142,6 +144,7 @@ thread::spawn(move || {
         }
     }
 });
+
 
 
         Self {
