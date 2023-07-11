@@ -86,7 +86,7 @@ impl Receiver {
 
 let sub_tx = tx.clone();
 thread::spawn(move || loop {
-    let mut buffer = [0u8; 4096];
+    let mut buffer = [0u8; 352];
         match socket.recv_from(&mut buffer) {
             Ok((packet_size, _)) => {
                 if packet_size >= 4 {
