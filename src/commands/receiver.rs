@@ -86,7 +86,7 @@ impl Receiver {
 
 let sub_tx = tx.clone();
 thread::spawn(move || {
-   // let socket = UdpSocket::bind("0.0.0.0:5000").expect("Failed to bind UDP socket");
+//    let socket = UdpSocket::bind("0.0.0.0:5000").expect("Failed to bind UDP socket");
     let mut buffer = [0u8; 360]; // Adjust buffer size according to your structure
 
     loop {
@@ -96,17 +96,20 @@ thread::spawn(move || {
                     let src_id = u16::from_be_bytes([buffer[0], buffer[1]]);
                     let dst_id = u16::from_be_bytes([buffer[2], buffer[3]]);
                     let audio_size = packet_size - 6; // Size of audio data without IDs
-                    let audio = Vec::from(&buffer[6..(6 + audio_size)]);
 
-                    println!(
-                        "[INFO] RECEIVED PACKET: (length: {}, src_id: {}, dst_id: {})",
-                        packet_size,
-                        src_id,
-                        dst_id
-                    );
+                    if audio_size > 0 {
+                        let audio = Vec::from(&buffer[6..(6 + audio_size)]);
 
-                    if sub_tx.send(Some(audio)).is_err() {
-                        return;
+                        println!(
+                            "[INFO] RECEIVED PACKET: (length: {}, src_id: {}, dst_id: {})",
+                            packet_size,
+                            src_id,
+                            dst_id
+                        );
+
+                        if sub_tx.send(Some(audio)).is_err() {
+                            return;
+                        }
                     }
                 }
             }
