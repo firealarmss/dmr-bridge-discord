@@ -91,7 +91,6 @@ let mut previous_audio_end = time::Instant::now();
 thread::spawn(move || {
     let mut buffer = [0u8; 352];
     let mut audio_buffer = Vec::new();
-    let mut first_packet_received = false;
 
     loop {
         match socket.recv_from(&mut buffer) {
@@ -101,15 +100,12 @@ thread::spawn(move || {
                     let dst_id = u16::from_be_bytes([buffer[packet_size - 2], buffer[packet_size - 1]]);
                     let audio_data = &buffer[..(packet_size - 4)];
 
-                    if !first_packet_received {
-                        println!(
-                            "[INFO] RECEIVED FIRST PACKET: (length: {}, src_id: {}, dst_id: {})",
-                            packet_size,
-                            src_id,
-                            dst_id
-                        );
-                        first_packet_received = true;
-                    }
+                    println!(
+                        "[INFO] RECEIVED PACKET: (length: {}, src_id: {}, dst_id: {})",
+                        packet_size,
+                        src_id,
+                        dst_id
+                    );
 
                     if audio_data.len() == 320 {
                         // Append the received audio to the buffer
