@@ -128,15 +128,15 @@ impl VoiceEventHandler for Transmitter {
                     ];
                     self.write_header(&mut start_buffer, false, 2);
                     start_buffer[32..53].copy_from_slice(&header);
-                    self.tx
-                        .send(Some((USRPVoicePacketType::Start, Vec::from(start_buffer))))
-                        .expect("Couldn't send discord's audio packet through DMR transmitter");
+                //    self.tx
+               //         .send(Some((USRPVoicePacketType::Start, Vec::from(start_buffer))))
+                //        .expect("Couldn't send discord's audio packet through DMR transmitter");
                 } else {
                     let mut end_buffer = [0u8; 32];
                     self.write_header(&mut end_buffer, false, 0);
-                    self.tx
-                        .send(Some((USRPVoicePacketType::End, Vec::from(end_buffer))))
-                        .expect("Couldn't send discord's audio packet through DMR transmitter");
+              //      self.tx
+              //          .send(Some((USRPVoicePacketType::End, Vec::from(end_buffer))))
+              //          .expect("Couldn't send discord's audio packet through DMR transmitter");
                 }
             }
             Ctx::VoicePacket(data) => {
@@ -155,9 +155,9 @@ impl VoiceEventHandler for Transmitter {
                         let mut packet_buffer = [0u8; 352];
                         self.write_header(&mut packet_buffer, true, 0);
                         LittleEndian::write_i16_into(&frames, &mut packet_buffer[32..]);
-                        self.tx
-                            .send(Some((USRPVoicePacketType::Audio, Vec::from(packet_buffer))))
-                            .expect("Couldn't send discord's audio packet through DMR transmitter");
+                  //      self.tx
+                   //         .send(Some((USRPVoicePacketType::Audio, Vec::from(packet_buffer))))
+                   //         .expect("Couldn't send discord's audio packet through DMR transmitter");
                     }
                 } else {
                     println!("RTP packet, but no audio. Driver may not be configured to decode.");
