@@ -25,8 +25,8 @@ Edit the `.env` (the same directory or in /opt/dmr-bridge-discord) file to refle
 
 * `BOT_TOKEN` : see [this link](https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token) to know how to get a token
 * `BOT_PREFIX` : prefix to add before the bot's commands
-* `TARGET_RX_ADDR` : your Analog Bridge IP and port NOT USED AT THIS TIME
-* `LOCAL_RX_ADDR` : your dmr-bridge-discord IP and port to receieve from dvmbridge
+* `TARGET_RX_ADDR` : your dvmbridge IP and port NOT USED AT THIS TIME
+* `LOCAL_RX_ADDR` : your dvm2discord IP and port to receieve from dvmbridge
 
 ### Usage
 
@@ -38,8 +38,6 @@ Here are the bot's commands:
 The bot will join the voice channel you're in after your type `!join`.
 
 TX DOES NOT WORK AT THIS TIME
-
-Make sure you don't TX and RX at the same time, as AnalogBridge and the rest of the stack is half-duplex. 
 
 ## Todo
 
